@@ -80,32 +80,41 @@ int Ext4::check(const char *fsPath) {
         const char *args[5];
         args[0] = E2FSCK_PATH;
         args[1] = "-p";
-        args[2] = "-f";
-        args[3] = fsPath;
-        args[4] = NULL;
+        args[2] = fsPath;
+        args[3] = NULL;
 
-        rc = logwrap(4, args, 1);
-
-        switch(rc) {
-        case 0:
+        rc = logwrap(3, args, 1);
+        SLOGI("E2FSCK returned %d", rc);
+        if(rc == 0) {
             SLOGI("EXT4 Filesystem check completed OK.\n");
             return 0;
-        case 1:
+        }
+        if(rc & 1) {
             SLOGI("EXT4 Filesystem check completed, errors corrected OK.\n");
-            return 0;
-        case 2:
+        }
+        if(rc & 2) {
             SLOGE("EXT4 Filesystem check completed, errors corrected, need reboot.\n");
-            return 0;
-        case 4:
+        }
+        if(rc & 4) {
             SLOGE("EXT4 Filesystem errors left uncorrected.\n");
-            return 0;
-        case 8:
+        }
+        if(rc & 8) {
             SLOGE("E2FSCK Operational error.\n");
             errno = EIO;
-            return -1;
-        default:
-            SLOGE("EXT4 Filesystem check failed (unknown exit code %d).\n", rc);
+        }
+        if(rc & 16) {
+            SLOGE("E2FSCK Usage or syntax error.\n");
             errno = EIO;
+        }
+        if(rc & 32) {
+            SLOGE("E2FSCK Canceled by user request.\n");
+            errno = EIO;
+        }
+        if(rc & 128) {
+            SLOGE("E2FSCK Shared library error.\n");
+            errno = EIO;
+        }
+        if(errno == EIO) {
             return -1;
         }
     } while (0);
