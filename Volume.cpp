@@ -571,7 +571,8 @@ int Volume::mountVol() {
          * Now that the bindmount trickery is done, atomically move the
          * whole subtree to expose it to non priviledged users.
          */
-        if (isUnixFs) {
+        //if (isUnixFs) {
+        if(0) {
             /*
              * In case of a unix filesystem we're using the sdcard daemon
              * to expose the subtree to non privileged users to avoid
@@ -585,8 +586,10 @@ int Volume::mountVol() {
             // Create fuse dir if not exists
             if (access(fuseSrc, R_OK | W_OK)) {
                 if (mkdir(fuseSrc, 0775)) {
-                    SLOGE("Failed to create %s (%s)", fuseSrc, strerror(errno));
-                    failed = true;
+                    if(errno != EEXIST) {
+                      SLOGE("Failed to create %s (%s)", fuseSrc, strerror(errno));
+                      failed = true;
+                    }
                 }
             }
 
