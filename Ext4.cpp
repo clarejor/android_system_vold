@@ -75,9 +75,9 @@ int Ext4::check(const char *fsPath) {
         return 0;
     }
 
-    int rc = -1;
+    int rc;
     do {
-        const char *args[5];
+        const char *args[4];
         args[0] = E2FSCK_PATH;
         args[1] = "-p";
         args[2] = fsPath;
